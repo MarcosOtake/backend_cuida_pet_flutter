@@ -10,7 +10,7 @@ class TesteController {
    @Route.get('/')
    Future<Response> find(Request request) async { 
      print('Iniciando TesteController');
-     final resp = Response.ok(jsonEncode('{"message": "hello"}'));
+     final resp = Response.ok(jsonEncode({'message': 'hello'}));
      print('Finalizando TesteController');
      return resp;
    }

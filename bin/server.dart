@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:cuidapet_api/application/config/application_config.dart';
 import 'package:cuidapet_api/application/middlewares/cors/cors_middlewares.dart';
+import 'package:cuidapet_api/application/middlewares/defaultContentType/default_content_type.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_router/shelf_router.dart';
@@ -32,6 +33,7 @@ void main(List<String> args) async {
 
   var handler = const shelf.Pipeline()
       .addMiddleware(CorsMiddlewares().handler)
+      .addMiddleware(DefaultContentType('application/json;charset=utf-8').handler)
       .addMiddleware(shelf.logRequests())
       .addHandler(router);
 
