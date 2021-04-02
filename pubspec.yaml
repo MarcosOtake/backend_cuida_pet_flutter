@@ -14,6 +14,7 @@ dependencies:
   get_it: ^6.0.0
   logger: ^1.0.0
   injectable: ^1.2.2
+  jaguar_jwt: ^3.0.0
 
 dev_dependencies:
   pedantic: ^1.9.0
