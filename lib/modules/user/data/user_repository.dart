@@ -82,19 +82,61 @@ class UserRepository implements IUserRepository {
       } else {
         final userSqlData = result.first;
         return User(
-          id: userSqlData['id'] as int,
-          email: userSqlData['email'],
-          registerType: userSqlData['tipo_cadastro'],
-          iosToken: (userSqlData['ios_token'] as Blob?)?.toString(),
-          androidToken: (userSqlData['android_token'] as Blob?)?.toString(),
-          refreshToken: (userSqlData['refresh_token'] as Blob?)?.toString(),
-          imageAvatar: (userSqlData['img_avatar'] as Blob?)?.toString(),
-          supplierId: userSqlData['fornecedor_id']
-        );
+            id: userSqlData['id'] as int,
+            email: userSqlData['email'],
+            registerType: userSqlData['tipo_cadastro'],
+            iosToken: (userSqlData['ios_token'] as Blob?)?.toString(),
+            androidToken: (userSqlData['android_token'] as Blob?)?.toString(),
+            refreshToken: (userSqlData['refresh_token'] as Blob?)?.toString(),
+            imageAvatar: (userSqlData['img_avatar'] as Blob?)?.toString(),
+            supplierId: userSqlData['fornecedor_id']);
       }
-    } on MySqlException catch(e, s) {
+    } on MySqlException catch (e, s) {
       log.error('Erro ao realizar login', e, s);
       throw DatabaseException(message: e.message);
+    } finally {
+      await conn?.close();
+    }
+  }
+
+  @override
+  Future<User> loginByEmailSocialKey(
+      String email, String socialKey, String socialType) async {
+    MySqlConnection? conn;
+    try {
+      conn = await connection.openConnection();
+
+      final result =
+          await conn.query('select * from usuario where email = ?', [email]);
+
+      if (result.isEmpty) {
+        throw UserNotfoundException(message: 'Usuário não encontrado');
+      } else {
+        final dataMysql = result.first;
+
+        if (dataMysql['social_id'] == null ||
+            dataMysql['social_id'] != socialKey) {
+          await conn.query('''
+            update usuario 
+            set social_id = ?, tipo_cadastro = ? 
+            where id = ?
+          ''', [
+            socialKey,
+            socialType,
+            dataMysql['id'],
+          ]);
+        }
+
+        return User(
+            id: dataMysql['id'] as int,
+            email: dataMysql['email'],
+            registerType: dataMysql['tipo_cadastro'],
+            iosToken: (dataMysql['ios_token'] as Blob?)?.toString(),
+            androidToken: (dataMysql['android_token'] as Blob?)?.toString(),
+            refreshToken: (dataMysql['refresh_token'] as Blob?)?.toString(),
+            imageAvatar: (dataMysql['img_avatar'] as Blob?)?.toString(),
+            supplierId: dataMysql['fornecedor_id']);
+      }
     } finally {
       await conn?.close();
     }

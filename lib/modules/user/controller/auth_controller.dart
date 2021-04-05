@@ -38,7 +38,11 @@ class AuthController {
             loginViewModel.password, loginViewModel.supplierUser);
       } else {
         // Social Login (Facebook, google, apple, etc...)
-        user = User();
+        user = await userService.loginWithSocial(
+            loginViewModel.login,
+            loginViewModel.avatar,
+            loginViewModel.socialType,
+            loginViewModel.socialKey);
       }
 
       return Response.ok(jsonEncode(
