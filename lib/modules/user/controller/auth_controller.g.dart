@@ -11,5 +11,6 @@ Router _$AuthControllerRouter(AuthController service) {
   router.add('POST', r'/', service.login);
   router.add('POST', r'/register', service.saveUser);
   router.add('PATCH', r'/confirm', service.confirmLogin);
+  router.add('PUT', r'/refresh', service.refreshToken);
   return router;
 }
