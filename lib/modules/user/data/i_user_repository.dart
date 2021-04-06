@@ -1,4 +1,5 @@
 import 'package:cuidapet_api/entities/user.dart';
+import 'package:cuidapet_api/modules/user/view_models/update_url_avatar_view_model.dart';
 
 abstract class IUserRepository {
   Future<User> createUser(User user);
@@ -7,4 +8,5 @@ abstract class IUserRepository {
   Future<void> updateUserDeviceTokenAndRefreshToken(User user);
   Future<void> updateRefreshToken(User user);
   Future<User> findById(int id);
+  Future<void> updateUrlAvatar(int id, String urlAvatar);
 }

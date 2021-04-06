@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cuidapet_api/application/exceptions/user_notfound_exception.dart';
 import 'package:cuidapet_api/application/logger/i_logger.dart';
+import 'package:cuidapet_api/modules/user/view_models/update_url_avatar_view_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -30,13 +31,33 @@ class UserController {
         'register_type': userData.registerType,
         'img_avatar': userData.imageAvatar
       }));
-
     } on UserNotfoundException {
       return Response(204);
     } catch (e, s) {
       log.error('Erro ao buscar usuário', e, s);
       return Response.internalServerError(
           body: jsonEncode({'message': 'Erro ao buscar usuário'}));
+    }
+  }
+
+  @Route.put('/avatar')
+  Future<Response> updateAvatar(Request request) async {
+    try {
+      final userId = int.parse(request.headers['user']!);
+      final updateUrlAvatarViewModel = UpdateUrlAvatarViewModel(
+        userId: userId,
+        dataRequest: await request.readAsString(),
+      );
+      final user = await userService.updateAvatar(updateUrlAvatarViewModel);
+      
+      return Response.ok(jsonEncode({
+        'email': user.email,
+        'register_type': user.registerType,
+        'img_avatar': user.imageAvatar
+      }));
+    } catch (e, s) {
+      log.error('Erro ao atualizar avatar', e, s);
+      return Response.internalServerError(body: {'message': 'Erro ao atualizar avatar'});
     }
   }
 

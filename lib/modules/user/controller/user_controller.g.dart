@@ -9,5 +9,6 @@ part of 'user_controller.dart';
 Router _$UserControllerRouter(UserController service) {
   final router = Router();
   router.add('GET', r'/', service.findByToken);
+  router.add('PUT', r'/avatar', service.updateAvatar);
   return router;
 }
