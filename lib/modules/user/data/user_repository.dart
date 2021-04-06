@@ -147,10 +147,10 @@ class UserRepository implements IUserRepository {
     MySqlConnection? conn;
     try {
       conn = await connection.openConnection();
-      
+
       final setParams = {};
 
-      if(user.iosToken != null) {
+      if (user.iosToken != null) {
         setParams.putIfAbsent('ios_token', () => user.iosToken);
       } else {
         setParams.putIfAbsent('android_token', () => user.androidToken);
@@ -164,12 +164,9 @@ class UserRepository implements IUserRepository {
         where
           id = ?
       ''';
-      await conn.query(query, [
-        setParams.values.elementAt(0),
-        user.refreshToken!,
-        user.id!
-      ]);
-    } on MySqlException catch(e,s) {
+      await conn.query(
+          query, [setParams.values.elementAt(0), user.refreshToken!, user.id!]);
+    } on MySqlException catch (e, s) {
       log.error('Erro ao confirmar login', e, s);
       throw DatabaseException();
     } finally {
@@ -182,10 +179,42 @@ class UserRepository implements IUserRepository {
     MySqlConnection? conn;
     try {
       conn = await connection.openConnection();
-      await conn.query('update usuario set refresh_token = ? where id = ?',[
-        user.refreshToken!,
-        user.id!
-      ]);
+      await conn.query('update usuario set refresh_token = ? where id = ?',
+          [user.refreshToken!, user.id!]);
+    } finally {
+      await conn?.close();
+    }
+  }
+
+  @override
+  Future<User> findById(int id) async {
+    MySqlConnection? conn;
+    try {
+      conn = await connection.openConnection();
+      final result = await conn.query('''
+        select 
+          id, email, tipo_cadastro, ios_token, android_token,
+          refresh_token, img_avatar, fornecedor_id
+        from usuario
+        where id = ?
+      ''', [id]);
+
+      if (result.isEmpty) {
+        log.error('Usuário não encontrado com o id[$id]');
+        throw UserNotfoundException(
+            message: 'Usuário não encontrado com o id[$id]');
+      } else {
+        final dataMysql = result.first;
+        return User(
+            id: dataMysql['id'] as int,
+            email: dataMysql['email'],
+            registerType: dataMysql['tipo_cadastro'],
+            iosToken: (dataMysql['ios_token'] as Blob?)?.toString(),
+            androidToken: (dataMysql['android_token'] as Blob?)?.toString(),
+            refreshToken: (dataMysql['refresh_token'] as Blob?)?.toString(),
+            imageAvatar: (dataMysql['img_avatar'] as Blob?)?.toString(),
+            supplierId: dataMysql['fornecedor_id']);
+      }
     } finally {
       await conn?.close();
     }
