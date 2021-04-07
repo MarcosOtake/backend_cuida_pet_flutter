@@ -8,6 +8,6 @@ part of 'supplier_controller.dart';
 
 Router _$SupplierControllerRouter(SupplierController service) {
   final router = Router();
-  router.add('GET', r'/', service.find);
+  router.add('GET', r'/', service.findNearByMe);
   return router;
 }
