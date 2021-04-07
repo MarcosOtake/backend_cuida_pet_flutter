@@ -13,5 +13,6 @@ Router _$SupplierControllerRouter(SupplierController service) {
   router.add('GET', r'/<supplierId|[0-9]+>/services',
       service.findServicesBySupplierId);
   router.add('GET', r'/user', service.checkUserExists);
+  router.add('POST', r'/user', service.createNewUser);
   return router;
 }

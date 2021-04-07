@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cuidapet_api/application/logger/i_logger.dart';
 import 'package:cuidapet_api/entities/supplier.dart';
+import 'package:cuidapet_api/modules/supplier/view_models/create_supplier_user_view_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -100,6 +101,21 @@ class SupplierController {
 
     final isEmailExists = await service.checkUserEmailsExists(email);
     return isEmailExists ? Response(200) : Response(204);
+  }
+
+  @Route.post('/user')
+  Future<Response> createNewUser(Request request) async {
+    try {
+      final model = CreateSupplierUserViewModel(await request.readAsString());
+      await service.createUserSupplier(model);
+      return Response.ok(jsonEncode({}));
+    } catch (e, s) {
+      log.error('Erro ao cadastrar um novo fornecedor e usuário', e, s);
+      return Response.internalServerError(
+          body: jsonEncode({
+        'message': 'Erro ao cadastrar um novo fornecedor e usuário',
+      }));
+    }
   }
 
   String _supplierMapper(Supplier supplier) {
