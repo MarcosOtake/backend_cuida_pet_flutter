@@ -70,11 +70,10 @@ class SupplierController {
   @Route.get('/<supplierId|[0-9]+>/services')
   Future<Response> findServicesBySupplierId(
       Request request, String supplierId) async {
-    
     try {
       final supplierServices =
           await service.findServicesBySupplier(int.parse(supplierId));
-      
+
       final result = supplierServices
           .map((e) => {
                 'id': e.id,
@@ -83,12 +82,24 @@ class SupplierController {
                 'price': e.price
               })
           .toList();
-      
+
       return Response.ok(jsonEncode(result));
     } catch (e, s) {
       log.error('Erro ao buscar servicos', e, s);
-      return Response.internalServerError(body: jsonEncode({'message': 'Erro ao buscar servicos'}));
+      return Response.internalServerError(
+          body: jsonEncode({'message': 'Erro ao buscar servicos'}));
     }
+  }
+
+  @Route.get('/user')
+  Future<Response> checkUserExists(Request request) async {
+    final email = request.url.queryParameters['email'];
+    if (email == null) {
+      return Response(400, body: jsonEncode({'message': 'E-mail obrigatório'}));
+    }
+
+    final isEmailExists = await service.checkUserEmailsExists(email);
+    return isEmailExists ? Response(200) : Response(204);
   }
 
   String _supplierMapper(Supplier supplier) {
