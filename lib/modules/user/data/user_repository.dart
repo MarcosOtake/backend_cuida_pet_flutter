@@ -29,7 +29,7 @@ class UserRepository implements IUserRepository {
         values(?,?,?,?,?,?)
       ''';
 
-      final result = await conn.query(query, <Object?>[
+      final result = await conn.query(query, [
         user.email,
         user.registerType,
         user.imageAvatar,

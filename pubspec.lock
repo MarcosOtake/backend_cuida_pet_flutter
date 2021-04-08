@@ -135,7 +135,7 @@ packages:
     source: hosted
     version: "3.0.0"
   crypto:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: crypto
       url: "https://pub.dartlang.org"
@@ -261,7 +261,7 @@ packages:
     source: hosted
     version: "1.0.0"
   logging:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: logging
       url: "https://pub.dartlang.org"
@@ -294,7 +294,7 @@ packages:
       name: mysql1
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.17.1"
+    version: "0.19.0"
   package_config:
     dependency: transitive
     description:

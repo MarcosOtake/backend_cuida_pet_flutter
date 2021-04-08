@@ -163,7 +163,7 @@ class SupplierRepository implements ISupplierRepository {
       final result = await conn.query('''
         insert into fornecedor(nome, logo, endereco, telefone, latlng, categorias_fornecedor_id)
         values (?,?,?,?,ST_GeomFromText(?),?)
-      ''', <Object?>[
+      ''', [
         supplier.name,
         supplier.logo,
         supplier.address,
@@ -172,7 +172,7 @@ class SupplierRepository implements ISupplierRepository {
         supplier.category?.id
       ]);
 
-      return result.insertId;
+      return result.insertId ?? 0;
     } on MySqlException catch (e, s) {
       log.error('Erro ao cadastrar novo fornecedor', e, s);
       throw DatabaseException();
@@ -198,7 +198,7 @@ class SupplierRepository implements ISupplierRepository {
             categorias_fornecedor_id = ?
         where
           id = ?
-      ''', <Object?>[
+      ''', [
         supplier.name,
         supplier.logo,
         supplier.address,

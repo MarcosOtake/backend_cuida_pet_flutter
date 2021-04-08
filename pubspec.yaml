@@ -8,7 +8,7 @@ environment:
 dependencies:
   args: ^2.0.0
   dotenv: ^3.0.0-nullsafety.0
-  mysql1: ^0.17.1
+  mysql1: ^0.19.0
   shelf: ^1.1.0
   shelf_router: ^1.0.0
   get_it: ^6.0.0
@@ -26,9 +26,5 @@ dev_dependencies:
       path: shelf_router_generator
 
 dependency_overrides:
-  # Foi sobrescrito devido ao mysql1 não foi migrado ainda para o null-safety
-  logging: ^1.0.0
-  # Foi sobrescrito devido ao mysql1 não foi migrado ainda para o null-safety
-  crypto: ^3.0.0
   # Foi sobrescrito devido ao shelf_router_generator 
   source_gen: ^1.0.0
