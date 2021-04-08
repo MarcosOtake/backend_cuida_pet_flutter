@@ -39,7 +39,8 @@ class SupplierRepository implements ISupplierRepository {
                             sin(radians(ST_X(f.latlng)))
                 )) AS distancia
             FROM fornecedor f
-            HAVING distancia <= $distance;
+            HAVING distancia <= $distance
+            Order by distancia;
       ''';
 
       final result = await conn.query(query);
@@ -174,6 +175,57 @@ class SupplierRepository implements ISupplierRepository {
       return result.insertId;
     } on MySqlException catch (e, s) {
       log.error('Erro ao cadastrar novo fornecedor', e, s);
+      throw DatabaseException();
+    } finally {
+      await conn?.close();
+    }
+  }
+
+  @override
+  Future<Supplier> update(Supplier supplier) async {
+    MySqlConnection? conn;
+
+    try {
+      conn = await connection.openConnection();
+      await conn.query('''
+        update fornecedor
+          set
+            nome = ?,
+            logo = ?,
+            endereco = ?,
+            telefone = ?,
+            latlng = ST_GeomFromText(?),
+            categorias_fornecedor_id = ?
+        where
+          id = ?
+      ''', <Object?>[
+        supplier.name,
+        supplier.logo,
+        supplier.address,
+        supplier.phone,
+        'POINT(${supplier.lat} ${supplier.lng})',
+        supplier.category?.id,
+        supplier.id
+      ]);
+
+      Category? category;
+      final categoryId = supplier.category?.id;
+      if (categoryId != null) {
+        final resultCategory = await conn.query(
+            'select * from categorias_fornecedor where id = ?',
+            [categoryId]);
+
+        var categoryData = resultCategory.first;
+        category = Category(
+          id: categoryData['id'],
+          name: categoryData['nome_categoria'],
+          type: categoryData['tipo_categoria'],
+        );
+      }
+
+      return supplier.copyWith(category: category);
+    } on MySqlException catch (e, s) {
+      log.error('Erro ao atualizar dados do fornecedor', e, s);
       throw DatabaseException();
     } finally {
       await conn?.close();

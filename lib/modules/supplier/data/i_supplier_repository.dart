@@ -13,4 +13,6 @@ abstract class ISupplierRepository {
   Future<bool> checkUserEmailExists(String email);
   
   Future<int> saveSupplier(Supplier supplier);
+
+  Future<Supplier> update(Supplier supplier);
 }
