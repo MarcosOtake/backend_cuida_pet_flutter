@@ -11,7 +11,6 @@ import './i_schedule_service.dart';
 
 @LazySingleton(as: IScheduleService)
 class ScheduleService implements IScheduleService {
-
   final IScheduleRepository repository;
   ScheduleService({
     required this.repository,
@@ -20,17 +19,21 @@ class ScheduleService implements IScheduleService {
   @override
   Future<void> scheduleService(ScheduleSaveInputModel model) async {
     final schedule = Schedule(
-      scheduleDate: model.scheduleDate,
-      name: model.name,
-      petName: model.petName,
-      supplier: Supplier(id: model.supplierId),
-      status: 'P',
-      userId: model.userId,
-      services: model.services.map((e) => ScheduleSupplierService(service: 
-        SupplierService(id: e),
-      )).toList()
-    );
+        scheduleDate: model.scheduleDate,
+        name: model.name,
+        petName: model.petName,
+        supplier: Supplier(id: model.supplierId),
+        status: 'P',
+        userId: model.userId,
+        services: model.services
+            .map((e) => ScheduleSupplierService(
+                  service: SupplierService(id: e),
+                ))
+            .toList());
     await repository.save(schedule);
   }
-  
+
+  @override
+  Future<void> changeStatus(String status, int scheduleId) =>
+      repository.changeStatus(status, scheduleId);
 }
