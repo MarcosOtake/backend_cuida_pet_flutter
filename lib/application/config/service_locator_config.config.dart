@@ -15,11 +15,11 @@ import '../../modules/categories/service/i_categories_service.dart' as _i22;
 import '../../modules/schedules/controller/schedule_controller.dart' as _i17;
 import '../../modules/schedules/data/i_schedule_repository.dart' as _i6;
 import '../../modules/schedules/data/schedule_repository.dart' as _i7;
-import '../../modules/schedules/service/i_schedule_service.dart' as _i8;
-import '../../modules/schedules/service/schedule_service.dart' as _i9;
+import '../../modules/schedules/service/i_schedule_service.dart' as _i9;
+import '../../modules/schedules/service/schedule_service.dart' as _i10;
 import '../../modules/supplier/controller/supplier_controller.dart' as _i26;
-import '../../modules/supplier/data/i_supplier_repository.dart' as _i10;
-import '../../modules/supplier/data/supplier_repository.dart' as _i11;
+import '../../modules/supplier/data/i_supplier_repository.dart' as _i11;
+import '../../modules/supplier/data/supplier_repository.dart' as _i12;
 import '../../modules/supplier/service/i_supplier_service.dart' as _i24;
 import '../../modules/supplier/service/supplier_service.dart' as _i25;
 import '../../modules/user/controller/auth_controller.dart' as _i19;
@@ -30,7 +30,7 @@ import '../../modules/user/service/i_user_service.dart' as _i15;
 import '../../modules/user/service/user_service.dart' as _i16;
 import '../database/database_connection.dart' as _i4;
 import '../database/i_database_connection.dart' as _i3;
-import '../logger/i_logger.dart' as _i12;
+import '../logger/i_logger.dart' as _i8;
 import 'database_connection_configuration.dart'
     as _i5; // ignore_for_file: unnecessary_lambdas
 
@@ -41,28 +41,31 @@ _i1.GetIt $initGetIt(_i1.GetIt get,
   final gh = _i2.GetItHelper(get, environment, environmentFilter);
   gh.lazySingleton<_i3.IDatabaseConnection>(
       () => _i4.DatabaseConnection(get<_i5.DatabaseConnectionConfiguration>()));
-  gh.lazySingleton<_i6.IScheduleRepository>(() => _i7.ScheduleRepository());
-  gh.lazySingleton<_i8.IScheduleService>(() => _i9.ScheduleService());
-  gh.lazySingleton<_i10.ISupplierRepository>(() => _i11.SupplierRepository(
-      connection: get<_i3.IDatabaseConnection>(), log: get<_i12.ILogger>()));
+  gh.lazySingleton<_i6.IScheduleRepository>(() => _i7.ScheduleRepository(
+      connection: get<_i3.IDatabaseConnection>(), log: get<_i8.ILogger>()));
+  gh.lazySingleton<_i9.IScheduleService>(
+      () => _i10.ScheduleService(repository: get<_i6.IScheduleRepository>()));
+  gh.lazySingleton<_i11.ISupplierRepository>(() => _i12.SupplierRepository(
+      connection: get<_i3.IDatabaseConnection>(), log: get<_i8.ILogger>()));
   gh.lazySingleton<_i13.IUserRepository>(() => _i14.UserRepository(
-      connection: get<_i3.IDatabaseConnection>(), log: get<_i12.ILogger>()));
+      connection: get<_i3.IDatabaseConnection>(), log: get<_i8.ILogger>()));
   gh.lazySingleton<_i15.IUserService>(() => _i16.UserService(
-      userRepository: get<_i13.IUserRepository>(), log: get<_i12.ILogger>()));
-  gh.factory<_i17.ScheduleController>(() => _i17.ScheduleController());
+      userRepository: get<_i13.IUserRepository>(), log: get<_i8.ILogger>()));
+  gh.factory<_i17.ScheduleController>(() => _i17.ScheduleController(
+      service: get<_i9.IScheduleService>(), log: get<_i8.ILogger>()));
   gh.factory<_i18.UserController>(() => _i18.UserController(
-      userService: get<_i15.IUserService>(), log: get<_i12.ILogger>()));
+      userService: get<_i15.IUserService>(), log: get<_i8.ILogger>()));
   gh.factory<_i19.AuthController>(() => _i19.AuthController(
-      userService: get<_i15.IUserService>(), log: get<_i12.ILogger>()));
+      userService: get<_i15.IUserService>(), log: get<_i8.ILogger>()));
   gh.lazySingleton<_i20.ICategoriesRepository>(() => _i21.CategoriesRepository(
-      connection: get<_i3.IDatabaseConnection>(), log: get<_i12.ILogger>()));
+      connection: get<_i3.IDatabaseConnection>(), log: get<_i8.ILogger>()));
   gh.lazySingleton<_i22.ICategoriesService>(() =>
       _i23.CategoriesService(repository: get<_i20.ICategoriesRepository>()));
   gh.lazySingleton<_i24.ISupplierService>(() => _i25.SupplierService(
-      repository: get<_i10.ISupplierRepository>(),
+      repository: get<_i11.ISupplierRepository>(),
       userService: get<_i15.IUserService>()));
   gh.factory<_i26.SupplierController>(() => _i26.SupplierController(
-      service: get<_i24.ISupplierService>(), log: get<_i12.ILogger>()));
+      service: get<_i24.ISupplierService>(), log: get<_i8.ILogger>()));
   gh.factory<_i27.CategoriesController>(
       () => _i27.CategoriesController(service: get<_i22.ICategoriesService>()));
   return get;
