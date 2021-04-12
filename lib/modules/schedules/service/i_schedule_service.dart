@@ -5,4 +5,5 @@ abstract class IScheduleService {
   Future<void> scheduleService(ScheduleSaveInputModel model);
   Future<void> changeStatus(String status, int scheduleId);
   Future<List<Schedule>> findAllSchedulesByUser(int userId);
+  Future<List<Schedule>> findAllSchedulesByUserSupplier(int userId);
 }
