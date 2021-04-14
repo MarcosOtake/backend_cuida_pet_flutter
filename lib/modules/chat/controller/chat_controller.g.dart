@@ -13,5 +13,6 @@ Router _$ChatControllerRouter(ChatController service) {
   router.add('POST', r'/notify', service.notifyUser);
   router.add('GET', r'/user', service.findChatsByUser);
   router.add('GET', r'/supplier', service.findChatsBySupplier);
+  router.add('PUT', r'/<chatId>/end-chat', service.endChat);
   return router;
 }
