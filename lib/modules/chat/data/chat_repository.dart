@@ -134,10 +134,9 @@ class ChatRepository implements IChatRepository {
                 id: c['id'],
                 user: c['usuario_id'],
                 supplier: Supplier(
-                  id: c['fornecedor_id'],
-                  name: c['fornec_nome'],
-                  logo: (c['logo'] as Blob?)?.toString()
-                ),
+                    id: c['fornecedor_id'],
+                    name: c['fornec_nome'],
+                    logo: (c['logo'] as Blob?)?.toString()),
                 name: c['nome'],
                 petName: c['nome_pet'],
                 status: c['status'],
@@ -145,6 +144,50 @@ class ChatRepository implements IChatRepository {
           .toList();
     } on MySqlException catch (e, s) {
       log.error('Erro ao buscar chats de um usuário', e, s);
+      throw DatabaseException();
+    } finally {
+      await conn?.close();
+    }
+  }
+
+  @override
+  Future<List<Chat>> getChatsBySupplier(int supplier) async {
+    MySqlConnection? conn;
+
+    try {
+      conn = await connection.openConnection();
+       final query = '''
+        select 
+          c.id, c.data_criacao, c.status,
+          a.nome, a.nome_pet, a.fornecedor_id, a.usuario_id, 
+          f.nome as fornec_nome, f.logo
+        from chats as c
+        inner join agendamento a on a.id = c.agendamento_id
+        inner join fornecedor f on f.id = a.fornecedor_id
+        where 
+          a.fornecedor_id = ?
+        and
+          c.status = 'A'
+        order by 
+          c.data_criacao
+      ''';
+
+      final result = await conn.query(query, [supplier]);
+      return result
+          .map((c) => Chat(
+                id: c['id'],
+                user: c['usuario_id'],
+                supplier: Supplier(
+                    id: c['fornecedor_id'],
+                    name: c['fornec_nome'],
+                    logo: (c['logo'] as Blob?)?.toString()),
+                name: c['nome'],
+                petName: c['nome_pet'],
+                status: c['status'],
+              ))
+          .toList();
+    } on MySqlException catch (e, s) {
+      log.error('Erro ao buscar os chats do fornecedor', e, s);
       throw DatabaseException();
     } finally {
       await conn?.close();
