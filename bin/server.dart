@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -30,6 +31,7 @@ void main(List<String> args) async {
 
   // Application Config
   final router = Router();
+  router.get('/health', (shelf.Request request) => shelf.Response.ok(jsonEncode({'up': 'true'})));
   final appConfig = ApplicationConfig();
   await appConfig.loadConfigApplication(router);
 
