@@ -25,6 +25,8 @@ dev_dependencies:
     git:
       url: https://github.com/google/dart-neats.git
       path: shelf_router_generator
+  test: ^1.16.8
+  mocktail: ^0.1.1
 
 dependency_overrides:
   # Foi sobrescrito devido ao shelf_router_generator 
