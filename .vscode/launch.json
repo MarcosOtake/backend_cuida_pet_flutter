@@ -9,7 +9,7 @@
             "request": "launch",
             "type": "dart",
             "program": "${workspaceFolder}/bin/server.dart",
-            "vmAdditionalArgs": ["--no-sound-null-safety"]
+            // "vmAdditionalArgs": ["--no-sound-null-safety"]
         }
     ]
 }

@@ -9,7 +9,7 @@ import 'package:cuidapet_api/modules/user/view_models/user_update_token_device_i
 abstract class IUserService {
   Future<User> createUser(UserSaveInputModel user);
   Future<User> loginWithEmailPassword(String email, String password, bool supplierUser);
-  Future<User> loginWithSocial(String email, String avatar, String socialType, String socialKey);
+  Future<User> loginWithSocial(String email, String? avatar, String socialType, String socialKey);
   Future<String> confirmLogin(UserConfirmInputModel inputModel);
   Future<RefreshTokenViewModel> refreshToken(UserRefreshTokenInputModel model);
   Future<User> findById(int id);
