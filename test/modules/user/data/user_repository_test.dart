@@ -111,19 +111,18 @@ void main() {
       );
 
       final userExpected = User(
-        id: userId,
-        email: 'rodrigorahman@academiadoflutter.com.br',
-        registerType: 'APP',
-        imageAvatar: '',
-        password: ''
-      );
+          id: userId,
+          email: 'rodrigorahman@academiadoflutter.com.br',
+          registerType: 'APP',
+          imageAvatar: '',
+          password: '');
 
       //Act
       final user = await userRepository.createUser(userInsert);
       //Assert
       expect(user, userExpected);
     });
-  
+
     test('Should throw DatabaseException', () async {
       //Arrange
       database.mockQueryException();
@@ -131,19 +130,87 @@ void main() {
       var call = userRepository.createUser;
       //Assert
       expect(() => call(User()), throwsA(isA<DatabaseException>()));
-      
     });
 
     test('Should throw UserExistsException', () async {
       //Arrange
       final exception = MockMysqlException();
       when(() => exception.message).thenReturn('usuario.email_UNIQUE');
-      database.mockQueryException(exception);
+      database.mockQueryException(mockException: exception);
       //Act
       var call = userRepository.createUser;
       //Assert
       expect(() => call(User()), throwsA(isA<UserExistsException>()));
+    });
+  });
+
+  group('Group test loginWithEmailPassword', () {
+    test('Should login with email and password', () async {
+      //Arrange
+      final userFixtureDB = FixtureReader.getJsonData(
+          'modules/user/data/fixture/login_with_email_password_success.json');
+      final mockResults = MockResults(userFixtureDB, [
+        'ios_token',
+        'android_token',
+        'refresh_token',
+        'img_avatar',
+      ]);
+      final email = 'rodrigorahman@academiadoflutter.com.br';
+      final password = '123123';
+      database.mockQuery(
+          mockResults, [email, CriptyHelper.generateSha256Hash(password)]);
+      final userMap = jsonDecode(userFixtureDB);
+      final userExpected = User(
+          id: userMap['id'],
+          email: userMap['email'],
+          registerType: userMap['tipo_cadastro'],
+          iosToken: userMap['ios_token'],
+          androidToken: userMap['android_token'],
+          refreshToken: userMap['refresh_token'],
+          imageAvatar: userMap['img_avatar'],
+          supplierId: userMap['fornecedor_id']);
+      //Act
+      final user =
+          await userRepository.loginWithEmailPassword(email, password, false);
+
+      //Assert
+      expect(user, userExpected);
+      database.verifyConnectionClose();
+    });
+
+    test('Should login with email and password and return Exception UserNotFoundException', () async {
+      //Arrange
+      final mockResults = MockResults();
       
+      final email = 'rodrigorahman@academiadoflutter.com.br';
+      final password = '123123';
+      
+      database.mockQuery(
+          mockResults, [email, CriptyHelper.generateSha256Hash(password)]);
+
+      //Act
+      final call = userRepository.loginWithEmailPassword;
+
+      //Assert
+      expect(() => call(email, password, false), throwsA(isA<UserNotfoundException>()));
+      await Future.delayed(Duration(milliseconds: 200));
+      database.verifyConnectionClose();
+    });
+
+    test('Should login with email and password and return Exception DatabaseException', () async {
+      //Arrange
+      final email = 'rodrigorahman@academiadoflutter.com.br';
+      final password = '123123';
+      
+      database.mockQueryException(params: [email, CriptyHelper.generateSha256Hash(password)]);
+
+      //Act
+      final call = userRepository.loginWithEmailPassword;
+
+      //Assert
+      expect(() => call(email, password, false), throwsA(isA<DatabaseException>()));
+      await Future.delayed(Duration(milliseconds: 200));
+      database.verifyConnectionClose();
     });
   });
 }
