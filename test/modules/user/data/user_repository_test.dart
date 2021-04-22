@@ -8,7 +8,6 @@ import 'package:cuidapet_api/application/logger/i_logger.dart';
 import 'package:cuidapet_api/entities/user.dart';
 import 'package:cuidapet_api/modules/user/data/user_repository.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
 
 import '../../../core/fixture/fixture_reader.dart';
@@ -178,13 +177,15 @@ void main() {
       database.verifyConnectionClose();
     });
 
-    test('Should login with email and password and return Exception UserNotFoundException', () async {
+    test(
+        'Should login with email and password and return Exception UserNotFoundException',
+        () async {
       //Arrange
       final mockResults = MockResults();
-      
+
       final email = 'rodrigorahman@academiadoflutter.com.br';
       final password = '123123';
-      
+
       database.mockQuery(
           mockResults, [email, CriptyHelper.generateSha256Hash(password)]);
 
@@ -192,24 +193,169 @@ void main() {
       final call = userRepository.loginWithEmailPassword;
 
       //Assert
-      expect(() => call(email, password, false), throwsA(isA<UserNotfoundException>()));
+      expect(() => call(email, password, false),
+          throwsA(isA<UserNotfoundException>()));
       await Future.delayed(Duration(milliseconds: 200));
       database.verifyConnectionClose();
     });
 
-    test('Should login with email and password and return Exception DatabaseException', () async {
+    test(
+        'Should login with email and password and return Exception DatabaseException',
+        () async {
       //Arrange
       final email = 'rodrigorahman@academiadoflutter.com.br';
       final password = '123123';
-      
-      database.mockQueryException(params: [email, CriptyHelper.generateSha256Hash(password)]);
+
+      database.mockQueryException(
+          params: [email, CriptyHelper.generateSha256Hash(password)]);
 
       //Act
       final call = userRepository.loginWithEmailPassword;
 
       //Assert
-      expect(() => call(email, password, false), throwsA(isA<DatabaseException>()));
+      expect(() => call(email, password, false),
+          throwsA(isA<DatabaseException>()));
       await Future.delayed(Duration(milliseconds: 200));
+      database.verifyConnectionClose();
+    });
+  });
+
+  group('Group test loginByEmailSocialKey', () {
+    test('Should login with email and social Key with success', () async {
+      //Arrange
+      final userFixtureDB = FixtureReader.getJsonData(
+          'modules/user/data/fixture/login_with_email_social_key.json');
+      final mockResults = MockResults(userFixtureDB, [
+        'ios_token',
+        'android_token',
+        'refresh_token',
+        'img_avatar',
+      ]);
+      final email = 'rodrigorahman@academiadoflutter.com.br';
+      final socialKey = '123';
+      final socialType = 'Facebook';
+      final params = [email];
+
+      // mock do nosso select
+      database.mockQuery(mockResults, params);
+
+      final userMap = jsonDecode(userFixtureDB);
+      final userExpected = User(
+          id: userMap['id'],
+          email: userMap['email'],
+          registerType: userMap['tipo_cadastro'],
+          iosToken: userMap['ios_token'],
+          androidToken: userMap['android_token'],
+          refreshToken: userMap['refresh_token'],
+          imageAvatar: userMap['img_avatar'],
+          supplierId: userMap['fornecedor_id']);
+      //Act
+      final user = await userRepository.loginByEmailSocialKey(
+          email, socialKey, socialType);
+
+      //Assert
+      expect(user, userExpected);
+      database.verifyQueryCalled(params: params);
+      database.verifyQueryNeverCalled(params: [
+        socialKey,
+        socialType,
+        userMap['id'],
+      ]);
+      database.verifyConnectionClose();
+    });
+
+    test(
+        'Should login with email and social Key with success and update social id',
+        () async {
+      //Arrange
+      final userFixtureDB = FixtureReader.getJsonData(
+          'modules/user/data/fixture/login_with_email_social_key.json');
+      final mockResults = MockResults(userFixtureDB, [
+        'ios_token',
+        'android_token',
+        'refresh_token',
+        'img_avatar',
+      ]);
+      final userMap = jsonDecode(userFixtureDB);
+
+      final email = 'rodrigorahman@academiadoflutter.com.br';
+      final socialKey = 'G123';
+      final socialType = 'Google';
+      final paramsSelect = [email];
+      final paramsUpdate = <Object>[
+        socialKey,
+        socialType,
+        userMap['id'],
+      ];
+
+      // mock do nosso select
+      database.mockQuery(mockResults, paramsSelect);
+      database.mockQuery(mockResults, paramsUpdate);
+
+      final userExpected = User(
+          id: userMap['id'],
+          email: userMap['email'],
+          registerType: userMap['tipo_cadastro'],
+          iosToken: userMap['ios_token'],
+          androidToken: userMap['android_token'],
+          refreshToken: userMap['refresh_token'],
+          imageAvatar: userMap['img_avatar'],
+          supplierId: userMap['fornecedor_id']);
+      //Act
+      final user = await userRepository.loginByEmailSocialKey(
+          email, socialKey, socialType);
+
+      //Assert
+      expect(user, userExpected);
+      database.verifyQueryCalled(params: paramsSelect);
+      database.verifyQueryCalled(params: paramsUpdate);
+      database.verifyConnectionClose();
+    });
+
+    test(
+        'Should login with email and social Key and throws UserNotFoundException',
+        () async {
+      //Arrange
+      final mockResults = MockResults();
+
+      final email = 'rodrigorahman@academiadoflutter.com.br';
+      final socialKey = 'G123';
+      final socialType = 'Google';
+      final paramsSelect = [email];
+
+      // mock do nosso select
+      database.mockQuery(mockResults, paramsSelect);
+
+      //Act
+      final call = userRepository.loginByEmailSocialKey;
+
+      //Assert
+      expect(() => call(email, socialKey, socialType),
+          throwsA(isA<UserNotfoundException>()));
+      await Future.delayed(Duration(milliseconds: 200));
+      database.verifyQueryCalled(params: paramsSelect);
+      database.verifyConnectionClose();
+    });
+
+    test('Should login with email and social Key and throws DatabaseException',
+        () async {
+      //Arrange
+      final email = 'rodrigorahman@academiadoflutter.com.br';
+      final socialKey = 'G123';
+      final socialType = 'Google';
+      final paramsSelect = [email];
+
+      // mock do nosso select
+      database.mockQueryException(params: paramsSelect);
+
+      //Act
+      final call = userRepository.loginByEmailSocialKey;
+
+      //Assert
+      expect(() => call(email, socialKey, socialType),
+          throwsA(isA<DatabaseException>()));
+      await Future.delayed(Duration(milliseconds: 200));
+      database.verifyQueryCalled(params: paramsSelect);
       database.verifyConnectionClose();
     });
   });
