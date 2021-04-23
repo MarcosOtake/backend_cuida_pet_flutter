@@ -1,9 +1,14 @@
+import 'package:cuidapet_api/application/exceptions/service_exception.dart';
 import 'package:cuidapet_api/application/exceptions/user_notfound_exception.dart';
+import 'package:cuidapet_api/application/helpers/jwt_helper.dart';
 import 'package:cuidapet_api/application/logger/i_logger.dart';
 import 'package:cuidapet_api/entities/user.dart';
 import 'package:cuidapet_api/modules/user/data/i_user_repository.dart';
 import 'package:cuidapet_api/modules/user/service/i_user_service.dart';
 import 'package:cuidapet_api/modules/user/service/user_service.dart';
+import 'package:cuidapet_api/modules/user/view_models/refresh_token_view_model.dart';
+import 'package:cuidapet_api/modules/user/view_models/user_refresh_token_input_model.dart';
+import 'package:dotenv/dotenv.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -21,6 +26,7 @@ void main() {
     log = MockLogger();
     userService = UserService(userRepository: userRepository, log: log);
     registerFallbackValue<User>(User());
+    load();
   });
 
   group('Group test loginWithEmailPassword', () {
@@ -117,6 +123,64 @@ void main() {
       verify(() => userRepository.loginByEmailSocialKey(
           email, socialKey, socialType)).called(1);
       verify(() => userRepository.createUser(any<User>())).called(1);
+    });
+  });
+
+  group('Group test refreshToken', () {
+    test('Should refresh token with success', () async {
+      //Arrange
+      env['refresh_token_not_before_hours'] = '0';
+      final userId = 1;
+      final accessToken = JwtHelper.generateJWT(userId, null);
+      final refreshToken = JwtHelper.refreshToken(accessToken);
+      final model = UserRefreshTokenInputModel(
+        user: userId,
+        accessToken: accessToken,
+        dataRequest: '{"refresh_token": "$refreshToken"}',
+      );
+      when(() => userRepository.updateRefreshToken(any()))
+          .thenAnswer((_) async => _);
+      //Act
+      final responseToken = await userService.refreshToken(model);
+
+      //Assert
+      expect(responseToken, isA<RefreshTokenViewModel>());
+      expect(responseToken.accessToken, isNotEmpty);
+      expect(responseToken.refreshToken, isNotEmpty);
+      verify(() => userRepository.updateRefreshToken(any())).called(1);
+    });
+
+    test('Should try refresh token JWT but return validate erro (Bearer)',
+        () async {
+      //Arrange
+      final model = UserRefreshTokenInputModel(
+        user: 1,
+        accessToken: 'accessToken',
+        dataRequest: '{"refresh_token": "123"}',
+      );
+      //Act
+      final call = userService.refreshToken;
+
+      //Assert
+      expect(() => call(model), throwsA(isA<ServiceException>()));
+    });
+
+    test('Should try refresh token JWT but return validate erro (JwtException)',
+        () async {
+      //Arrange
+      final userId = 1;
+      final accessToken = JwtHelper.generateJWT(userId, null);
+      final refreshToken = JwtHelper.refreshToken('123');
+      final model = UserRefreshTokenInputModel(
+        user: userId,
+        accessToken: accessToken,
+        dataRequest: '{"refresh_token": "$refreshToken"}',
+      );
+      //Act
+      final call = userService.refreshToken;
+
+      //Assert
+      expect(() => call(model), throwsA(isA<ServiceException>()));
     });
   });
 }
