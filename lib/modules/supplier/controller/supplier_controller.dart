@@ -28,7 +28,7 @@ class SupplierController {
     try {
       final lat = double.tryParse(request.url.queryParameters['lat'] ?? '');
       final lng = double.tryParse(request.url.queryParameters['lng'] ?? '');
-
+  
       if (lat == null || lng == null) {
         return Response(
           400,
