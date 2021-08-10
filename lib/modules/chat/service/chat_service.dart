@@ -44,9 +44,11 @@ class ChatService implements IChatService {
       'type': 'CHAT_MESSAGE',
       'chat': {
         'id': chat.id,
-        'nome': chat.name,
-        'fornecedor': {
-          'nome': chat.supplier.name,
+        'name': chat.name,
+        'user': chat.user,
+        'supplier': {
+          'id': chat.supplier.id,
+          'name': chat.supplier.name,
           'logo': chat.supplier.logo,
         }
       }
