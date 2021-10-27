@@ -2,7 +2,18 @@ import './i_logger.dart';
 import 'package:logger/logger.dart' as log;
 
 class Logger implements ILogger {
-  final _logger = log.Logger();
+  late final _logger;
+
+  Logger() {
+    var release = true;
+    assert(() {
+      release = false;
+      return true;
+    }());
+    _logger = log.Logger(
+      filter: release ? log.ProductionFilter() : log.DevelopmentFilter(),
+    );
+  }
 
   @override
   void debug(message, [error, StackTrace? stackTrace]) =>
@@ -11,7 +22,7 @@ class Logger implements ILogger {
   @override
   void error(message, [error, StackTrace? stackTrace]) =>
       _logger.e(message, error, stackTrace);
-      
+
   @override
   void info(message, [error, StackTrace? stackTrace]) =>
       _logger.i(message, error, stackTrace);
