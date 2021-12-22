@@ -50,12 +50,13 @@ class AuthController {
             loginViewModel.socialKey!);
       }
 
-      return Response.ok(jsonEncode(
-          {'access_token': JwtHelper.generateJWT(user.id!, user.supplierId)}));
+      return Response.ok(jsonEncode({
+        'access_token': JwtHelper.generateJWT(user.id!, user.supplierId),
+      }));
     } on UserNotfoundException {
       return Response.forbidden(
           jsonEncode({'message': 'Usuário ou senha inváldos'}));
-    } on RequestValidationException catch(e, s) {
+    } on RequestValidationException catch (e, s) {
       log.error('Erro de parametros obrigatorios não enviados', e, s);
       return Response(400, body: jsonEncode(e.errors));
     } catch (e, s) {
@@ -70,7 +71,8 @@ class AuthController {
   @Route.post('/register')
   Future<Response> saveUser(Request request) async {
     try {
-      final userModel = UserSaveInputModel.requestMapping(await request.readAsString());
+      final userModel =
+          UserSaveInputModel.requestMapping(await request.readAsString());
       await userService.createUser(userModel);
       return Response.ok(
           jsonEncode({'message': 'cadastro realizado com sucesso'}));
@@ -91,7 +93,7 @@ class AuthController {
       final supplier = int.tryParse(request.headers['supplier'] ?? '');
       final token =
           JwtHelper.generateJWT(user, supplier).replaceAll('Bearer ', '');
-      
+
       final inputModel = UserConfirmInputModel(
         userId: user,
         accessToken: token,
@@ -99,16 +101,16 @@ class AuthController {
       );
       inputModel.validateRequest();
       final refreshToken = await userService.confirmLogin(inputModel);
-      
+
       return Response.ok(jsonEncode({
         'access_token': 'Bearer $token',
         'refresh_token': refreshToken,
       }));
-    } on RequestValidationException catch(e, s) {
-      log.error('Erro parametros obrigatorios nao enviados (BadRequest)', e ,s);
+    } on RequestValidationException catch (e, s) {
+      log.error('Erro parametros obrigatorios nao enviados (BadRequest)', e, s);
       return Response(400, body: jsonEncode(e.errors));
     } catch (e, s) {
-      log.error('Erro ao confirmar login', e ,s);
+      log.error('Erro ao confirmar login', e, s);
       return Response.internalServerError();
     }
   }
@@ -126,7 +128,7 @@ class AuthController {
         dataRequest: await request.readAsString(),
       );
       final userRefreshToken = await userService.refreshToken(model);
-      
+
       return Response.ok(
         jsonEncode({
           'access_token': userRefreshToken.accessToken,
@@ -134,7 +136,8 @@ class AuthController {
         }),
       );
     } catch (e) {
-      return Response.internalServerError(body: jsonEncode({'message': 'Erro ao atualizar access token'}));
+      return Response.internalServerError(
+          body: jsonEncode({'message': 'Erro ao atualizar access token'}));
     }
   }
 
