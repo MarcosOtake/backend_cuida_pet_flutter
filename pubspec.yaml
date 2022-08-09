@@ -32,3 +32,6 @@ dev_dependencies:
 # dependency_overrides:
 #   # Foi sobrescrito devido ao shelf_router_generator 
 #   source_gen: ^1.0.0
+
+# -------subir o servidor pelo terminal------
+# dart bin/server.dart 
